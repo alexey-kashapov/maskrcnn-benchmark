@@ -32,6 +32,7 @@ class GeneralizedRCNN(nn.Module):
         self.backbone = build_backbone(cfg)
         self.rpn = build_rpn(cfg, self.backbone.out_channels)
         self.roi_heads = build_roi_heads(cfg, self.backbone.out_channels)
+        print ("self.backbone.out_channels = ", self.backbone.out_channels)
         print( "FINISH CREATING THE WHOLE MODEL")
 
     def forward(self, images, depths, targets=None):
@@ -56,6 +57,7 @@ class GeneralizedRCNN(nn.Module):
             depths = to_image_list(depths)
             print(self.backbone)
             features = self.backbone([images.tensors, depths.tensors])
+            print ("FEATURES.SHAPE = ", features.shape)
         else:
             print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             images = to_image_list(images)

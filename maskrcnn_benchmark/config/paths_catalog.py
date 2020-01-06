@@ -188,7 +188,7 @@ class DatasetCatalog(object):
         elif "my_dataset" in name:
             data_dir = DatasetCatalog.DATA_DIR
             attrs = deepcopy(DatasetCatalog.DATASETS[name])
-            attrs["data_dir"] = "/home/pirozhochek/diploma/dataset/resized_images"
+            attrs["data_dir"] = "/home/q/kashapov/master_thesis/dataset/resized_images"
             return dict(factory="MyDataset", args=attrs)
 
         raise RuntimeError("Dataset not available: {}".format(name))
