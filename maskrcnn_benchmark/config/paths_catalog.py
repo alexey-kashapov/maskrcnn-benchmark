@@ -147,6 +147,12 @@ class DatasetCatalog(object):
             "mode": "mask",
             "mini": 10,
         },
+        "my_dataset_train": {
+            "img_dir" : ""
+        },
+        "my_dataset_test": {
+            "img_dir": ""
+        }
     }
 
     @staticmethod

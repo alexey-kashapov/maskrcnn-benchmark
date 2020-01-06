@@ -7,7 +7,7 @@ from maskrcnn_benchmark.modeling import registry
 from maskrcnn_benchmark.modeling.make_layers import conv_with_kaiming_uniform
 from . import fpn as fpn_module
 from . import resnet
-
+from . import rednet
 
 @registry.BACKBONES.register("R-50-C4")
 @registry.BACKBONES.register("R-50-C5")
@@ -70,6 +70,12 @@ def build_resnet_fpn_p3p7_backbone(cfg):
     model.out_channels = out_channels
     return model
 
+@registry.BACKBONES.register("RedNet-50")
+def build_rednet_50_backbone(cfg):
+    body = rednet.RedNet(cfg)
+    model = nn.Sequential(OrderedDict([("body", body)]))
+    model.out_channels = cfg.MODEL.RESNETS.BACKBONE_OUT_CHANNELS
+    return model
 
 def build_backbone(cfg):
     assert cfg.MODEL.BACKBONE.CONV_BODY in registry.BACKBONES, \
