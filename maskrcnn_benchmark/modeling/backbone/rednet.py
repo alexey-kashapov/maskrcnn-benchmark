@@ -95,13 +95,10 @@ class RedNet(nn.Module):
 
         return fuse4
 
-    def forward(self, rgb, depth, phase_checkpoint=False):
-
-        if phase_checkpoint:
-            depth.requires_grad_()
-            out = checkpoint(self.forward_downsample, rgb, depth)
-        else:
-            out = self.forward_downsample(rgb, depth)
+    def forward(self, rgb_and_depth):
+        rgb = rgb_and_depth[0]
+        depth = rgb_and_depth[1]
+        out = self.forward_downsample(rgb, depth)
 
         return out
 

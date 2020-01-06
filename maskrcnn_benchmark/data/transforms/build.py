@@ -32,15 +32,23 @@ def build_transforms(cfg, is_train=True):
         saturation=saturation,
         hue=hue,
     )
-
-    transform = T.Compose(
-        [
-            color_jitter,
-            T.Resize(min_size, max_size),
-            T.RandomHorizontalFlip(flip_horizontal_prob),
-            T.RandomVerticalFlip(flip_vertical_prob),
-            T.ToTensor(),
-            normalize_transform,
-        ]
-    )
+    print ("-----------------------------------------------------------------------")
+    if cfg.MODEL.BACKBONE.CONV_BODY == "RedNet-50":
+        print ("YESS")
+        transform = T.MyCompose(
+            [
+                T.ToTensorDepth()
+            ]
+        )
+    else:
+        transform = T.Compose(
+            [
+                color_jitter,
+                T.Resize(min_size, max_size),
+                T.RandomHorizontalFlip(flip_horizontal_prob),
+                T.RandomVerticalFlip(flip_vertical_prob),
+                T.ToTensor(),
+                normalize_transform,
+            ]
+        )
     return transform

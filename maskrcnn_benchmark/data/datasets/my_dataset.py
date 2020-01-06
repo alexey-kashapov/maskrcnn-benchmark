@@ -34,10 +34,10 @@ class2color = {"camera" : [17, 160, 96],
 }
 
 class MyDataset(torch.utils.data.Dataset):
-    def __init__(self, transform=None, phase_train=True, data_dir="../dataset/"):
+    def __init__(self, data_dir, transforms=None, phase_train=True):
         self.phase_train = phase_train
         self.root = data_dir
-        self.transform = transform
+        self.transforms = transforms
 
         if self.phase_train:
             list = os.listdir(self.root)  # dir is your directory path
@@ -76,23 +76,28 @@ class MyDataset(torch.utils.data.Dataset):
 
         gray_mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
-        _, thresh = cv2.threshold(gray_mask, 1, 255, 0)
-        _, contours, _ = cv2.findContours(thresh, 1, 2)
+        ret, thresh = cv2.threshold(gray_mask, 1, 255, 0)
+        image, contours, hierarchy = cv2.findContours(thresh, 1, 2)
+
+        kernel = np.ones((5, 5), np.uint8)
+        opening = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+
+        image, contours, hierarchy = cv2.findContours(opening, 1, 2)
 
         for cnt in contours:
+            cnt_mask = np.zeros(gray_mask.shape, np.uint8)
+            cv2.drawContours(cnt_mask, [cnt], 0, 255, -1)
+
             xmin, ymin, w, h = cv2.boundingRect(cnt)
             xmax = xmin + w
             ymax = ymin + h
             boxes.append([xmin, ymin, xmax, ymax])
-
             M = cv2.moments(cnt)
             cx = int(M['m10'] / M['m00'])
             cy = int(M['m01'] / M['m00'])
-
             if mask[cy, cx] in np.array(label_colours):
                 labels.append(np.where(np.array(label_colours) == mask[cy, cx])[0][0])
-                masks.append(cnt)
-
+                masks.append(cnt_mask)
 
         # convert everything into a torch.Tensor
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
@@ -103,14 +108,17 @@ class MyDataset(torch.utils.data.Dataset):
         # add the labels to the boxlist
         target.add_field("labels", labels)
 
-        masks = SegmentationMask(masks, color.size, mode='poly')
+        # convert everything into a torch.Tensor
+        masks = torch.as_tensor(masks, dtype=torch.bool)
+
+        masks = SegmentationMask(masks, color.size, mode='mask')
         target.add_field("masks", masks)
 
         if self.transforms:
             color, depth, target = self.transforms(color, depth, target)
 
         # return the image, the boxlist and the idx in your dataset
-        return color, depth, target, idx
+        return color, depth, target
 
     def get_img_info(self, idx):
         # get img_height and img_width. This is used if

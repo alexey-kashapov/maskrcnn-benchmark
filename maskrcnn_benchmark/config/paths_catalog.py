@@ -148,10 +148,10 @@ class DatasetCatalog(object):
             "mini": 10,
         },
         "my_dataset_train": {
-            "img_dir" : ""
+            "data_dir" : "my_dataset/resized_images",
         },
         "my_dataset_test": {
-            "img_dir": ""
+            "data_dir": "my_dataset/eval_resized_images",
         }
     }
 
@@ -185,6 +185,12 @@ class DatasetCatalog(object):
             attrs["img_dir"] = os.path.join(data_dir, attrs["img_dir"])
             attrs["ann_dir"] = os.path.join(data_dir, attrs["ann_dir"])
             return dict(factory="CityScapesDataset", args=attrs)
+        elif "my_dataset" in name:
+            data_dir = DatasetCatalog.DATA_DIR
+            attrs = deepcopy(DatasetCatalog.DATASETS[name])
+            attrs["data_dir"] = "/home/pirozhochek/diploma/dataset/resized_images"
+            return dict(factory="MyDataset", args=attrs)
+
         raise RuntimeError("Dataset not available: {}".format(name))
 
 

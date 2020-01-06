@@ -4,7 +4,7 @@ import random
 import torch
 import torchvision
 from torchvision.transforms import functional as F
-
+import numpy as np
 
 class Compose(object):
     def __init__(self, transforms):
@@ -14,6 +14,23 @@ class Compose(object):
         for t in self.transforms:
             image, target = t(image, target)
         return image, target
+
+    def __repr__(self):
+        format_string = self.__class__.__name__ + "("
+        for t in self.transforms:
+            format_string += "\n"
+            format_string += "    {0}".format(t)
+        format_string += "\n)"
+        return format_string
+
+class MyCompose(object):
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def __call__(self, image, depth, target):
+        for t in self.transforms:
+            image, depth, target = t(image, depth, target)
+        return image, depth, target
 
     def __repr__(self):
         format_string = self.__class__.__name__ + "("
@@ -104,6 +121,22 @@ class ColorJitter(object):
 class ToTensor(object):
     def __call__(self, image, target):
         return F.to_tensor(image), target
+
+class ToTensorDepth(object):
+    def __call__(self, image, depth, target):
+
+        # swap color axis because
+        # numpy image: H x W x C
+        # torch image: C X H X W
+        image = np.array(image)
+        depth = np.array(depth)
+        image = image.transpose((2, 0, 1))
+        depth = np.expand_dims(depth, 0).astype(np.float)
+
+        image = torch.from_numpy(image).float()
+        depth = torch.from_numpy(depth).float()
+
+        return image, depth, target
 
 
 class Normalize(object):

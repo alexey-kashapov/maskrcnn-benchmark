@@ -14,6 +14,7 @@ from maskrcnn_benchmark.utils.metric_logger import MetricLogger
 from maskrcnn_benchmark.engine.inference import inference
 
 from apex import amp
+from maskrcnn_benchmark.structures.image_list import to_image_list
 
 def reduce_loss_dict(loss_dict):
     """
@@ -69,19 +70,25 @@ def do_train(
         iou_types = iou_types + ("keypoints",)
     dataset_names = cfg.DATASETS.TEST
 
-    for iteration, (images, targets, _) in enumerate(data_loader, start_iter):
-        
+
+    for iteration, (images, depths, targets) in enumerate(data_loader, start_iter):
+
         if any(len(target) < 1 for target in targets):
             logger.error(f"Iteration={iteration + 1} || Image Ids used for training {_} || targets Length={[len(target) for target in targets]}" )
             continue
         data_time = time.time() - end
         iteration = iteration + 1
         arguments["iteration"] = iteration
+        print ("IMAGES = ", images)
 
         images = images.to(device)
+        depths = to_image_list(depths)
+        depths = depths.to(device)
+
+
         targets = [target.to(device) for target in targets]
 
-        loss_dict = model(images, targets)
+        loss_dict = model(images, depths, targets)
 
         losses = sum(loss for loss in loss_dict.values())
 
