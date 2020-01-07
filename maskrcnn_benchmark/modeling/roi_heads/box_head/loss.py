@@ -40,6 +40,8 @@ class FastRCNNLossComputation(object):
         match_quality_matrix = boxlist_iou(target, proposal)
         matched_idxs = self.proposal_matcher(match_quality_matrix)
         # Fast RCNN only need "labels" field for selecting the targets
+        print ("!!!!!!!!!!1")
+        print ("TARGET = ", target)
         target = target.copy_with_fields("labels")
         # get the targets corresponding GT for each proposal
         # NB: need to clamp the indices because we can have a single
@@ -53,12 +55,14 @@ class FastRCNNLossComputation(object):
         labels = []
         regression_targets = []
         for proposals_per_image, targets_per_image in zip(proposals, targets):
+            print("proposals_per_image = ", proposals_per_image)
             matched_targets = self.match_targets_to_proposals(
                 proposals_per_image, targets_per_image
             )
             matched_idxs = matched_targets.get_field("matched_idxs")
 
             labels_per_image = matched_targets.get_field("labels")
+            print("labels_per_image = ", labels_per_image)
             labels_per_image = labels_per_image.to(dtype=torch.int64)
 
             # Label background (below the low threshold)

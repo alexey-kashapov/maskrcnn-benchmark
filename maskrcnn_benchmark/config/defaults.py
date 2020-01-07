@@ -392,7 +392,7 @@ _C.MODEL.FBNET.RPN_BN_TYPE = ""
 # ---------------------------------------------------------------------------- #
 _C.MODEL.REDNET = CN()
 
-_C.MODEL.REDNET.BACKBONE_OUT_CHANNELS = 512 * 4
+_C.MODEL.REDNET.BACKBONE_OUT_CHANNELS = 512 * 2
 
 # ---------------------------------------------------------------------------- #
 # Solver

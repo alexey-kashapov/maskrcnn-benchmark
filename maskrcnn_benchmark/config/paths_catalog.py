@@ -5,7 +5,7 @@ import os
 from copy import deepcopy
 
 class DatasetCatalog(object):
-    DATA_DIR = "/home/pirozhochek/facebook_mask-rcnn/maskrcnn-benchmark/maskrcnn_benchmark/data/datasets"
+    DATA_DIR = "/home/q/kashapov/maskrcnn-benchmark/maskrcnn_benchmark/data/datasets"
     DATASETS = {
         "coco_2017_train": {
             "img_dir": "coco/train2017",

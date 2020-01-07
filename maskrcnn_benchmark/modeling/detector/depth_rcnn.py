@@ -48,7 +48,10 @@ class DepthRCNN(nn.Module):
         images = to_image_list(images)
         depths = to_image_list(depths)
         features = self.backbone([images.tensors, depths.tensors])
+        print ("INPUT FOR RPN = ", features[0].shape)
+        print ("TARGETS FOR RPN = ", targets[0])
         proposals, proposal_losses = self.rpn(images, features, targets)
+        print ("RPN OUTPUT SHAPE = ", proposals[0])
         if self.roi_heads:
             x, result, detector_losses = self.roi_heads(features, proposals, targets)
         else:
