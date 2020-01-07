@@ -79,12 +79,10 @@ def do_train(
         data_time = time.time() - end
         iteration = iteration + 1
         arguments["iteration"] = iteration
-        print ("IMAGES = ", images)
 
         images = images.to(device)
         depths = to_image_list(depths)
         depths = depths.to(device)
-
 
         targets = [target.to(device) for target in targets]
 

@@ -100,7 +100,7 @@ class RedNet(nn.Module):
         depth = rgb_and_depth[1]
         out = self.forward_downsample(rgb, depth)
 
-        return out
+        return [out]
 
 
 def conv3x3(in_planes, out_planes, stride=1):

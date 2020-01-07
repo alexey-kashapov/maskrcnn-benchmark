@@ -32,12 +32,10 @@ def build_transforms(cfg, is_train=True):
         saturation=saturation,
         hue=hue,
     )
-    print ("-----------------------------------------------------------------------")
-    if cfg.MODEL.BACKBONE.CONV_BODY == "RedNet-50":
-        print ("YESS")
-        transform = T.MyCompose(
+    if cfg.MODEL.META_ARCHITECTURE == "DepthRCNN":
+        transform = T.ComposeDepthRCNN(
             [
-                T.ToTensorDepth()
+                T.ToTensorDepthRCNN()
             ]
         )
     else:

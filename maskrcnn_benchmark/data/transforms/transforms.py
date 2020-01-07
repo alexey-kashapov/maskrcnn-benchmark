@@ -23,7 +23,7 @@ class Compose(object):
         format_string += "\n)"
         return format_string
 
-class MyCompose(object):
+class ComposeDepthRCNN(object):
     def __init__(self, transforms):
         self.transforms = transforms
 
@@ -122,22 +122,21 @@ class ToTensor(object):
     def __call__(self, image, target):
         return F.to_tensor(image), target
 
-class ToTensorDepth(object):
+class ToTensorDepthRCNN(object):
     def __call__(self, image, depth, target):
 
-        # swap color axis because
-        # numpy image: H x W x C
-        # torch image: C X H X W
-        image = np.array(image)
-        depth = np.array(depth)
-        image = image.transpose((2, 0, 1))
-        depth = np.expand_dims(depth, 0).astype(np.float)
+        # # swap color axis because
+        # # numpy image: H x W x C
+        # # torch image: C X H X W
+        # image = np.array(image)
+        # depth = np.array(depth)
+        # image = image.transpose((2, 0, 1))
+        # depth = np.expand_dims(depth, 0).astype(np.float)
+        #
+        # image = torch.from_numpy(image).float()
+        # depth = torch.from_numpy(depth).float()
 
-        image = torch.from_numpy(image).float()
-        depth = torch.from_numpy(depth).float()
-
-        return image, depth, target
-
+        return F.to_tensor(image), F.to_tensor(depth), target
 
 class Normalize(object):
     def __init__(self, mean, std, to_bgr255=True):
@@ -152,3 +151,10 @@ class Normalize(object):
         if target is None:
             return image
         return image, target
+
+class NormalizeDepthRCNN(object):
+    def __init__(self, mean, std, to_bgr255=True):
+        pass
+
+    def __call__(self, image, target=None):
+        pass

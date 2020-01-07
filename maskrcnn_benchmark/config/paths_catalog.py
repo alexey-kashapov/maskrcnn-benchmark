@@ -5,7 +5,7 @@ import os
 from copy import deepcopy
 
 class DatasetCatalog(object):
-    DATA_DIR = "datasets"
+    DATA_DIR = "/home/pirozhochek/facebook_mask-rcnn/maskrcnn-benchmark/maskrcnn_benchmark/data/datasets"
     DATASETS = {
         "coco_2017_train": {
             "img_dir": "coco/train2017",
@@ -188,7 +188,7 @@ class DatasetCatalog(object):
         elif "my_dataset" in name:
             data_dir = DatasetCatalog.DATA_DIR
             attrs = deepcopy(DatasetCatalog.DATASETS[name])
-            attrs["data_dir"] = "/home/q/kashapov/master_thesis/dataset/resized_images"
+            attrs["data_dir"] = os.path.join(data_dir, attrs["data_dir"])
             return dict(factory="MyDataset", args=attrs)
 
         raise RuntimeError("Dataset not available: {}".format(name))

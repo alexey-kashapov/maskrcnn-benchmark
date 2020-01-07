@@ -103,6 +103,7 @@ class RPNHead(nn.Module):
             t = F.relu(self.conv(feature))
             logits.append(self.cls_logits(t))
             bbox_reg.append(self.bbox_pred(t))
+
         return logits, bbox_reg
 
 

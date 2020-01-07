@@ -4,19 +4,10 @@ from maskrcnn_benchmark.structures.segmentation_mask import SegmentationMask
 from PIL import Image
 import cv2
 import numpy as np
-import scipy.io
-import imageio
-import h5py
 import os
 from torch.utils.data import Dataset
-import matplotlib
-import matplotlib.colors
-from skimage import io
-import skimage.transform
-import random
-import torchvision
-import torch
 
+import torch
 
 num_classes = 7
 
@@ -67,7 +58,6 @@ class MyDataset(torch.utils.data.Dataset):
         # instances are encoded as different colors
         obj_ids = np.unique(mask.reshape(-1, mask.shape[2]), axis=0)
         # first id is the background, so remove it
-        obj_ids = obj_ids[1:]
 
         # get bounding box coordinates for each mask
         boxes = []
