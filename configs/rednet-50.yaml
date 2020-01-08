@@ -27,4 +27,4 @@ SOLVER:
 TEST:
   IMS_PER_BATCH: 1
 
-OUTPUT_DIR: "/home/q/kashapov/maskrcnn-benchmark/maskrcnn_benchmark/data/datasets/my_dataset/test_results"
+

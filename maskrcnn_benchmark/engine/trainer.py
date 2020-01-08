@@ -70,7 +70,6 @@ def do_train(
         iou_types = iou_types + ("keypoints",)
     dataset_names = cfg.DATASETS.TEST
 
-
     for iteration, (images, depths, targets) in enumerate(data_loader, start_iter):
 
         if any(len(target) < 1 for target in targets):
@@ -81,7 +80,6 @@ def do_train(
         arguments["iteration"] = iteration
 
         images = images.to(device)
-        depths = to_image_list(depths)
         depths = depths.to(device)
 
         targets = [target.to(device) for target in targets]
