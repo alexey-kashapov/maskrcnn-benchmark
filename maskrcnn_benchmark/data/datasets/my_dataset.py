@@ -50,8 +50,8 @@ class MyDataset(torch.utils.data.Dataset):
             depth_path = os.path.join(self.root, str(idx) + "_depth.png")
             mask_path = os.path.join(self.root, str(idx) + "_uncolor_mask.png")
 
-        color = Image.open(color_path)
-        depth = Image.open(depth_path)
+        color_img = Image.open(color_path)
+        depth_img = Image.open(depth_path)
 
         mask = Image.open(mask_path)
         mask = np.array(mask)
@@ -64,51 +64,45 @@ class MyDataset(torch.utils.data.Dataset):
         labels = []
         masks = []
 
-        gray_mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+        for col_num, color in enumerate(label_colours[:1]):
+            color_mask = np.where(np.array(color) == mask)[:2]
+            if color_mask[0].size != 0:
+                new_img = np.zeros(mask.shape[:2], dtype=np.uint8)
+                new_img[color_mask] = 255
 
-        ret, thresh = cv2.threshold(gray_mask, 1, 255, 0)
-        image, contours, hierarchy = cv2.findContours(thresh, 1, 2)
+                _ , contours, _ = cv2.findContours(new_img, 1, 2)
+                for cnt in contours:
+                    cnt_mask = np.zeros(mask.shape[:2], np.uint8)
+                    cv2.drawContours(cnt_mask, [cnt], 0, 255, -1)
 
-        kernel = np.ones((5, 5), np.uint8)
-        opening = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+                    xmin, ymin, w, h = cv2.boundingRect(cnt)
+                    xmax = xmin + w
+                    ymax = ymin + h
+                    boxes.append([xmin, ymin, xmax, ymax])
 
-        image, contours, hierarchy = cv2.findContours(opening, 1, 2)
-
-        for cnt in contours:
-            cnt_mask = np.zeros(gray_mask.shape, np.uint8)
-            cv2.drawContours(cnt_mask, [cnt], 0, 255, -1)
-
-            xmin, ymin, w, h = cv2.boundingRect(cnt)
-            xmax = xmin + w
-            ymax = ymin + h
-            boxes.append([xmin, ymin, xmax, ymax])
-            M = cv2.moments(cnt)
-            cx = int(M['m10'] / M['m00'])
-            cy = int(M['m01'] / M['m00'])
-            if mask[cy, cx] in np.array(label_colours):
-                labels.append(np.where(np.array(label_colours) == mask[cy, cx])[0][0])
-                masks.append(cnt_mask)
+                    labels.append(col_num + 1)
+                    masks.append(cnt_mask)
 
         # convert everything into a torch.Tensor
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
         # there is only one class
         labels = torch.as_tensor(labels, dtype=torch.int64)
         # create a BoxList from the boxes
-        target = BoxList(boxes, color.size, mode="xyxy")
+        target = BoxList(boxes, color_img.size, mode="xyxy")
         # add the labels to the boxlist
         target.add_field("labels", labels)
 
         # convert everything into a torch.Tensor
         masks = torch.as_tensor(masks, dtype=torch.bool)
 
-        masks = SegmentationMask(masks, color.size, mode='mask')
+        masks = SegmentationMask(masks, color_img.size, mode='mask')
         target.add_field("masks", masks)
 
         if self.transforms:
-            color, depth, target = self.transforms(color, depth, target)
+            color_img, depth_img, target = self.transforms(color_img, depth_img, target)
 
         # return the image, the boxlist and the idx in your dataset
-        return color, depth, target
+        return color_img, depth_img, target
 
     def get_img_info(self, idx):
         # get img_height and img_width. This is used if

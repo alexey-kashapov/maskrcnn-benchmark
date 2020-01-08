@@ -12,28 +12,31 @@ from ..utils.comm import all_gather
 from ..utils.comm import synchronize
 from ..utils.timer import Timer, get_time_str
 from .bbox_aug import im_detect_bbox_aug
-
-
+# Many changes here from me!!!!!!!!!!
+from maskrcnn_benchmark.structures.image_list import to_image_list
 def compute_on_dataset(model, data_loader, device, bbox_aug, timer=None):
     model.eval()
     results_dict = {}
     cpu_device = torch.device("cpu")
-    for _, batch in enumerate(tqdm(data_loader)):
-        images, targets, image_ids = batch
+    for image_ids, batch in enumerate(tqdm(data_loader)):
+        #images, targets, image_ids = batch
+        images, depths, targets = batch
+        depths = to_image_list(depths)
         with torch.no_grad():
             if timer:
                 timer.tic()
             if bbox_aug:
                 output = im_detect_bbox_aug(model, images, device)
             else:
-                output = model(images.to(device))
+                output = model(images.to(device), depths.to(device))
             if timer:
                 if not device.type == 'cpu':
                     torch.cuda.synchronize()
                 timer.toc()
             output = [o.to(cpu_device) for o in output]
         results_dict.update(
-            {img_id: result for img_id, result in zip(image_ids, output)}
+            #{img_id: result for img_id, result in zip(image_ids, output)}
+            {image_ids:output}
         )
     return results_dict
 

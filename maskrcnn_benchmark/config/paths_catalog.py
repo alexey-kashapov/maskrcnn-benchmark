@@ -151,7 +151,7 @@ class DatasetCatalog(object):
             "data_dir" : "my_dataset/resized_images",
         },
         "my_dataset_test": {
-            "data_dir": "my_dataset/eval_resized_images",
+            "data_dir": "my_dataset/test_resized_images",
         }
     }
 
