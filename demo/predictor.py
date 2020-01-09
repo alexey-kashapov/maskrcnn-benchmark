@@ -475,8 +475,13 @@ class MyDatasetDemo(object):
     # COCO categories for pretty print
     CATEGORIES = [
         "__background",
-
-                  ]
+        "camera",
+        "screw",
+        "motherboard",
+        "connector",
+        "cable",
+        "battery"
+    ]
 
     def __init__(
             self,
@@ -527,11 +532,13 @@ class MyDatasetDemo(object):
                 the BoxList via `prediction.fields()`
         """
         predictions = self.compute_prediction(image, depth)
+        print("predictions = ", predictions)
         top_predictions = self.select_top_predictions(predictions)
 
         print(top_predictions)
         result = image.copy()
 
+        result = self.overlay_boxes(result, top_predictions)
         if self.cfg.MODEL.MASK_ON:
             result = self.overlay_mask(result, top_predictions)
         result = self.overlay_class_names(result, top_predictions)
@@ -624,6 +631,29 @@ class MyDatasetDemo(object):
         colors = labels[:, None] * self.palette
         colors = (colors % 255).numpy().astype("uint8")
         return colors
+
+    def overlay_boxes(self, image, predictions):
+        """
+        Adds the predicted boxes on top of the image
+
+        Arguments:
+            image (np.ndarray): an image as returned by OpenCV
+            predictions (BoxList): the result of the computation by the model.
+                It should contain the field `labels`.
+        """
+        labels = predictions.get_field("labels")
+        boxes = predictions.bbox
+
+        colors = self.compute_colors_for_labels(labels).tolist()
+
+        for box, color in zip(boxes, colors):
+            box = box.to(torch.int64)
+            top_left, bottom_right = box[:2].tolist(), box[2:].tolist()
+            image = cv2.rectangle(
+                image, tuple(top_left), tuple(bottom_right), tuple(color), 1
+            )
+
+        return image
 
     def overlay_mask(self, image, predictions):
         """
