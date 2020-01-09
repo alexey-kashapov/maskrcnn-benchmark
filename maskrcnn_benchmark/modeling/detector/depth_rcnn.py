@@ -46,6 +46,7 @@ class DepthRCNN(nn.Module):
             raise ValueError("In training mode, targets should be passed")
         images = to_image_list(images)
         depths = to_image_list(depths)
+
         features = self.backbone([images.tensors, depths.tensors])
         proposals, proposal_losses = self.rpn(images, features, targets)
         if self.roi_heads:

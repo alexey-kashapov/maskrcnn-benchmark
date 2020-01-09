@@ -64,7 +64,7 @@ class MyDataset(torch.utils.data.Dataset):
         labels = []
         masks = []
 
-        for col_num, color in enumerate(label_colours[:1]):
+        for col_num, color in enumerate(label_colours[1:]):
             color_mask = np.where(np.array(color) == mask)[:2]
             if color_mask[0].size != 0:
                 new_img = np.zeros(mask.shape[:2], dtype=np.uint8)

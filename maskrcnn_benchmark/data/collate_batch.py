@@ -1,7 +1,8 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 from maskrcnn_benchmark.structures.image_list import to_image_list
 
-
+import cv2
+import numpy as np
 class BatchCollator(object):
     """
     From a list of samples from the dataset,
@@ -30,9 +31,11 @@ class BatchDepthRCNNCollator(object):
 
     def __call__(self, batch):
         transposed_batch = list(zip(*batch))
+
         images = to_image_list(transposed_batch[0], self.size_divisible)
-        targets = transposed_batch[2]
         depths = to_image_list(transposed_batch[1], self.size_divisible)
+        targets = transposed_batch[2]
+
         return images, depths, targets
 
 

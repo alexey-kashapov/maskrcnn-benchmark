@@ -14,7 +14,8 @@ from maskrcnn_benchmark.utils.metric_logger import MetricLogger
 from maskrcnn_benchmark.engine.inference import inference
 
 from apex import amp
-from maskrcnn_benchmark.structures.image_list import to_image_list
+
+import cv2
 
 def reduce_loss_dict(loss_dict):
     """
