@@ -71,7 +71,7 @@ def do_train(
         iou_types = iou_types + ("keypoints",)
     dataset_names = cfg.DATASETS.TEST
 
-    for iteration, (images, depths, targets) in enumerate(data_loader, start_iter):
+    for iteration, (images, depths, targets, _) in enumerate(data_loader, start_iter):
 
         if any(len(target) < 1 for target in targets):
             logger.error(f"Iteration={iteration + 1} || Image Ids used for training {_} || targets Length={[len(target) for target in targets]}" )
@@ -80,13 +80,15 @@ def do_train(
         iteration = iteration + 1
         arguments["iteration"] = iteration
 
+
+
         images = images.to(device)
         depths = depths.to(device)
-
+        # print ("targets = ", targets.get_field("labels"))
         targets = [target.to(device) for target in targets]
 
         loss_dict = model(images, depths, targets)
-
+        # print ("proposal_losses = ", loss_dict)
         losses = sum(loss for loss in loss_dict.values())
 
         # reduce losses over all GPUs for logging purposes

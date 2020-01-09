@@ -500,7 +500,9 @@ class MyDatasetDemo(object):
         self.min_image_size = min_image_size
 
         save_dir = cfg.OUTPUT_DIR
+        print ("start checkpointer")
         checkpointer = DetectronCheckpointer(cfg, self.model, save_dir=save_dir)
+        print ("start checkpointer")
         _ = checkpointer.load(cfg.MODEL.WEIGHT)
 
         if weight_loading:
@@ -543,7 +545,7 @@ class MyDatasetDemo(object):
             result = self.overlay_mask(result, top_predictions)
         result = self.overlay_class_names(result, top_predictions)
 
-        return result
+        return result, predictions
 
     def build_transform(self):
         """
@@ -585,6 +587,7 @@ class MyDatasetDemo(object):
         # compute predictions
         with torch.no_grad():
             predictions = self.model(image_list, depth_list)
+            print ("PREDICTIONS = ", predictions)
         predictions = [o.to(self.cpu_device) for o in predictions]
 
         # always single image is passed at a time

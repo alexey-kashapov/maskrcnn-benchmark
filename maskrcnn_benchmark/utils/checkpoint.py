@@ -52,11 +52,13 @@ class Checkpointer(object):
     def load(self, f=None, use_latest=True):
         if self.has_checkpoint() and use_latest:
             # override argument with existing checkpoint
+            print ("find checkpoint")
             f = self.get_checkpoint_file()
         if not f:
             # no checkpoint could be found
             self.logger.info("No checkpoint found. Initializing model from scratch")
             return {}
+        print("find checkpoint1")
         self.logger.info("Loading checkpoint from {}".format(f))
         checkpoint = self._load_file(f)
         self._load_model(checkpoint)

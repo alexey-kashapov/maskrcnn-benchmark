@@ -102,7 +102,7 @@ class MyDataset(torch.utils.data.Dataset):
             color_img, depth_img, target = self.transforms(color_img, depth_img, target)
 
         # return the image, the boxlist and the idx in your dataset
-        return color_img, depth_img, target
+        return color_img, depth_img, target, idx
 
     def get_img_info(self, idx):
         # get img_height and img_width. This is used if
