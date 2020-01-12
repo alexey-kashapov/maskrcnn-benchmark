@@ -35,8 +35,8 @@ class BatchDepthRCNNCollator(object):
         images = to_image_list(transposed_batch[0], self.size_divisible)
         depths = to_image_list(transposed_batch[1], self.size_divisible)
         targets = transposed_batch[2]
-
-        return images, depths, targets
+        img_ids = transposed_batch[3]
+        return images, depths, targets, img_ids
 
 
 class BBoxAugCollator(object):

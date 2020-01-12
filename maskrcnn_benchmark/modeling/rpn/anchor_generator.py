@@ -124,7 +124,6 @@ class AnchorGenerator(nn.Module):
             anchors.append(anchors_in_image)
         return anchors
 
-
 def make_anchor_generator(config):
     anchor_sizes = config.MODEL.RPN.ANCHOR_SIZES
     aspect_ratios = config.MODEL.RPN.ASPECT_RATIOS

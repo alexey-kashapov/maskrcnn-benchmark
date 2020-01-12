@@ -98,7 +98,15 @@ class RedNet(nn.Module):
     def forward(self, rgb_and_depth):
         rgb = rgb_and_depth[0]
         depth = rgb_and_depth[1]
+
+        print ("INPUT FOR REDNET:")
+        print (rgb.shape)
+        print(depth.shape)
+
         out = self.forward_downsample(rgb, depth)
+
+        print ("OUTPUT FROM REDNET: ")
+        print (out.shape)
 
         return [out]
 

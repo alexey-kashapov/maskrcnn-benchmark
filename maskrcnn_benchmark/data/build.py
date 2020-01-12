@@ -40,6 +40,8 @@ def build_dataset(dataset_list, transforms, dataset_catalog, is_train=True):
             args["remove_images_without_annotations"] = is_train
         if data["factory"] == "PascalVOCDataset":
             args["use_difficult"] = not is_train
+        if data["factory"] == "MyDepthDataset":
+            args["phase_train"] = True
         if data["factory"] == "MyDataset":
             args["phase_train"] = True
         args["transforms"] = transforms
@@ -172,8 +174,7 @@ def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0, is_
             collator = BBoxAugCollator() if not is_train and cfg.TEST.BBOX_AUG.ENABLED else \
                 BatchCollator(cfg.DATALOADER.SIZE_DIVISIBILITY)
         elif cfg.MODEL.META_ARCHITECTURE == "DepthRCNN":
-            collator = BBoxAugCollator() if not is_train and cfg.TEST.BBOX_AUG.ENABLED else \
-                BatchDepthRCNNCollator(cfg.DATALOADER.SIZE_DIVISIBILITY)
+            collator = BatchDepthRCNNCollator(cfg.DATALOADER.SIZE_DIVISIBILITY)
         num_workers = cfg.DATALOADER.NUM_WORKERS
         data_loader = torch.utils.data.DataLoader(
             dataset,
