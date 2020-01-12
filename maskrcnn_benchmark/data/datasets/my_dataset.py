@@ -1,211 +1,110 @@
-from maskrcnn_benchmark.structures.bounding_box import BoxList
-from maskrcnn_benchmark.structures.segmentation_mask import SegmentationMask
-
-from PIL import Image
-import cv2
-import numpy as np
 import os
-from torch.utils.data import Dataset
+import os.path
 
 import torch
+import torchvision
 
-num_classes = 7
+from PIL import Image
 
-label_colours = [[0,0,0],
-                 # 0=background
-                 [17, 160, 96], [6, 17, 253], [137, 92, 167],
-                 [121, 237, 156], [169, 18, 8], [148, 84, 29]]
+from maskrcnn_benchmark.structures.bounding_box import BoxList
+from maskrcnn_benchmark.structures.segmentation_mask import SegmentationMask
+from maskrcnn_benchmark.structures.keypoint import PersonKeypoints
 
-class2color = {"camera" : [17, 160, 96],
-               "screw" : [6, 17, 253],
-               "motherboard" : [137, 92, 167],
-               "connector" : [121, 237, 156],
-               "cable" : [169, 18, 8],
-               "battery" : [148, 84, 29]
-}
+min_keypoints_per_image = 10
 
-class MyDepthDataset(torch.utils.data.Dataset):
-    def __init__(self, data_dir, transforms=None, phase_train=True):
-        self.phase_train = phase_train
-        self.root = data_dir
-        self.transforms = transforms
+def _count_visible_keypoints(anno):
+    return sum(sum(1 for v in ann["keypoints"][2::3] if v > 0) for ann in anno)
 
-        if self.phase_train:
-            list = os.listdir(self.root)  # dir is your directory path
-        else:
-            list = os.listdir(self.root)  # dir is your directory path
-        self.len = round(len(list) / 4)
 
-    def __len__(self):
-        return self.len
+def _has_only_empty_bbox(anno):
+    return all(any(o <= 1 for o in obj["bbox"][2:]) for obj in anno)
 
-    def __getitem__(self, idx):
-        # load the image as a PIL Image
-        if self.phase_train:
-            color_path = os.path.join(self.root, str(idx) + "_color.png")
-            depth_path = os.path.join(self.root, str(idx) + "_depth.png")
-            mask_path = os.path.join(self.root, str(idx) + "_uncolor_mask.png")
-        else:
-            color_path = os.path.join(self.root, str(idx) + "_color.png")
-            depth_path = os.path.join(self.root, str(idx) + "_depth.png")
-            mask_path = os.path.join(self.root, str(idx) + "_uncolor_mask.png")
 
-        color_img = Image.open(color_path)
-        depth_img = Image.open(depth_path)
+def has_valid_annotation(anno):
+    # if it's empty, there is no annotation
+    if len(anno) == 0:
+        return False
+    # if all boxes have close to zero area, there is no annotation
+    if _has_only_empty_bbox(anno):
+        return False
+    # keypoints task have a slight different critera for considering
+    # if an annotation is valid
+    if "keypoints" not in anno[0]:
+        return True
+    # for keypoint detection tasks, only consider valid images those
+    # containing at least min_keypoints_per_image
+    if _count_visible_keypoints(anno) >= min_keypoints_per_image:
+        return True
+    return False
 
-        mask = Image.open(mask_path)
-        mask = np.array(mask)
-        # instances are encoded as different colors
-        obj_ids = np.unique(mask.reshape(-1, mask.shape[2]), axis=0)
-        # first id is the background, so remove it
+class MyCOCODataset(torchvision.datasets.coco.CocoDetection):
+    def __init__(
+        self, ann_file, root, remove_images_without_annotations, transforms=None
+    ):
+        super(MyCOCODataset, self).__init__(root, ann_file)
+        # sort indices for reproducible results
+        self.ids = sorted(self.ids)
 
-        # get bounding box coordinates for each mask
-        boxes = []
-        labels = []
-        masks = []
+        # filter images without detection annotations
+        if remove_images_without_annotations:
+            ids = []
+            for img_id in self.ids:
+                ann_ids = self.coco.getAnnIds(imgIds=img_id, iscrowd=None)
+                anno = self.coco.loadAnns(ann_ids)
+                if has_valid_annotation(anno):
+                    ids.append(img_id)
+            self.ids = ids
 
-        for col_num, color in enumerate(label_colours[1:]):
-            color_mask = np.where(np.array(color) == mask)[:2]
-            if color_mask[0].size != 0:
-                new_img = np.zeros(mask.shape[:2], dtype=np.uint8)
-                new_img[color_mask] = 255
+        self.categories = {cat['id']: cat['name'] for cat in self.coco.cats.values()}
 
-                _ , contours, _ = cv2.findContours(new_img, 1, 2)
-                for cnt in contours:
-                    cnt_mask = np.zeros(mask.shape[:2], np.uint8)
-                    cv2.drawContours(cnt_mask, [cnt], 0, 255, -1)
-
-                    xmin, ymin, w, h = cv2.boundingRect(cnt)
-                    xmax = xmin + w
-                    ymax = ymin + h
-                    boxes.append([xmin, ymin, xmax, ymax])
-
-                    labels.append(col_num + 1)
-                    masks.append(cnt_mask)
-
-        # convert everything into a torch.Tensor
-        boxes = torch.as_tensor(boxes, dtype=torch.float32)
-        # there is only one class
-        labels = torch.as_tensor(labels, dtype=torch.int64)
-        # create a BoxList from the boxes
-        target = BoxList(boxes, color_img.size, mode="xyxy")
-        # add the labels to the boxlist
-        target.add_field("labels", labels)
-
-        # convert everything into a torch.Tensor
-        masks = torch.as_tensor(masks, dtype=torch.bool)
-
-        masks = SegmentationMask(masks, color_img.size, mode='mask')
-        target.add_field("masks", masks)
-
-        if self.transforms:
-            color_img, depth_img, target = self.transforms(color_img, depth_img, target)
-
-        # return the image, the boxlist and the idx in your dataset
-        return color_img, depth_img, target, idx
-
-    def get_img_info(self, idx):
-        # get img_height and img_width. This is used if
-        # we want to split the batches according to the aspect ratio
-        # of the image, as it can be more efficient than loading the
-        # image from disk
-        if self.phase_train:
-            color_path = os.path.join(self.root, str(idx) + "_color.png")
-        else:
-            color_path = os.path.join(self.root, str(idx) + "_color.png")
-
-        color = Image.open(color_path)
-        width, height = color.size
-        return {"height": height, "width": width}
-#
-class MyDataset(torch.utils.data.Dataset):
-    def __init__(self, data_dir, transforms=None, phase_train=True):
-        self.phase_train = phase_train
-        self.root = data_dir
-        self.transforms = transforms
-
-        if self.phase_train:
-            list = os.listdir(self.root)  # dir is your directory path
-        else:
-            list = os.listdir(self.root)  # dir is your directory path
-        self.len = round(len(list) / 4)
-
-    def __len__(self):
-        return self.len
+        self.json_category_id_to_contiguous_id = {
+            v: i + 1 for i, v in enumerate(self.coco.getCatIds())
+        }
+        self.contiguous_category_id_to_json_id = {
+            v: k for k, v in self.json_category_id_to_contiguous_id.items()
+        }
+        self.id_to_img_map = {k: v for k, v in enumerate(self.ids)}
+        self._transforms = transforms
 
     def __getitem__(self, idx):
-        # load the image as a PIL Image
-        if self.phase_train:
-            color_path = os.path.join(self.root, str(idx) + "_color.png")
-            mask_path = os.path.join(self.root, str(idx) + "_uncolor_mask.png")
-        else:
-            color_path = os.path.join(self.root, str(idx) + "_color.png")
-            mask_path = os.path.join(self.root, str(idx) + "_uncolor_mask.png")
+        img, anno = super(MyCOCODataset, self).__getitem__(idx)
 
-        color_img = Image.open(color_path)
+        path = self.coco.loadImgs(idx)[0]['file_name']
+        path = path.replace("_color", "_depth")
 
-        mask = Image.open(mask_path)
-        mask = np.array(mask)
-        # instances are encoded as different colors
-        # first id is the background, so remove it
+        depth = Image.open(os.path.join(self.root, path))
 
-        # get bounding box coordinates for each mask
-        boxes = []
-        labels = []
-        masks = []
+        # filter crowd annotations
+        # TODO might be better to add an extra field
+        anno = [obj for obj in anno if obj["iscrowd"] == 0]
 
-        for col_num, color in enumerate(label_colours[1:]):
-            color_mask = np.where(np.array(color) == mask)[:2]
-            if color_mask[0].size != 0:
-                new_img = np.zeros(mask.shape[:2], dtype=np.uint8)
-                new_img[color_mask] = 255
+        boxes = [obj["bbox"] for obj in anno]
+        boxes = torch.as_tensor(boxes).reshape(-1, 4)  # guard against no boxes
+        target = BoxList(boxes, img.size, mode="xywh").convert("xyxy")
 
-                _ , contours, _ = cv2.findContours(new_img, 1, 2)
-                for cnt in contours:
-                    cnt_mask = np.zeros(mask.shape[:2], np.uint8)
-                    cv2.drawContours(cnt_mask, [cnt], 0, 255, -1)
+        classes = [obj["category_id"] for obj in anno]
+        classes = [self.json_category_id_to_contiguous_id[c] for c in classes]
+        classes = torch.tensor(classes)
+        target.add_field("labels", classes)
 
-                    xmin, ymin, w, h = cv2.boundingRect(cnt)
-                    xmax = xmin + w
-                    ymax = ymin + h
-                    boxes.append([xmin, ymin, xmax, ymax])
+        if anno and "segmentation" in anno[0]:
+            masks = [obj["segmentation"] for obj in anno]
+            masks = SegmentationMask(masks, img.size, mode='poly')
+            target.add_field("masks", masks)
 
-                    labels.append(col_num + 1)
-                    masks.append(cnt_mask)
+        if anno and "keypoints" in anno[0]:
+            keypoints = [obj["keypoints"] for obj in anno]
+            keypoints = PersonKeypoints(keypoints, img.size)
+            target.add_field("keypoints", keypoints)
 
-        # convert everything into a torch.Tensor
-        boxes = torch.as_tensor(boxes, dtype=torch.float32)
-        # there is only one class
-        labels = torch.as_tensor(labels, dtype=torch.int64)
-        # create a BoxList from the boxes
-        target = BoxList(boxes, color_img.size, mode="xyxy")
-        # add the labels to the boxlist
-        target.add_field("labels", labels)
+        target = target.clip_to_image(remove_empty=True)
 
-        # convert everything into a torch.Tensor
-        masks = torch.as_tensor(masks, dtype=torch.uint8)
+        if self._transforms is not None:
+            img, depth, target = self._transforms(img, depth, target)
 
+        return img, depth, target, idx
 
-        masks = SegmentationMask(masks, color_img.size, mode='mask')
-        target.add_field("masks", masks)
-
-        if self.transforms:
-            color_img, target = self.transforms(color_img, target)
-
-        print ("COLOR_IMG = ", color_img)
-        # return the image, the boxlist and the idx in your dataset
-        return color_img, target, idx
-
-    def get_img_info(self, idx):
-        # get img_height and img_width. This is used if
-        # we want to split the batches according to the aspect ratio
-        # of the image, as it can be more efficient than loading the
-        # image from disk
-        if self.phase_train:
-            color_path = os.path.join(self.root, str(idx) + "_color.png")
-        else:
-            color_path = os.path.join(self.root, str(idx) + "_color.png")
-
-        color = Image.open(color_path)
-        width, height = color.size
-        return {"height": height, "width": width}
+    def get_img_info(self, index):
+        img_id = self.id_to_img_map[index]
+        img_data = self.coco.imgs[img_id]
+        return img_data

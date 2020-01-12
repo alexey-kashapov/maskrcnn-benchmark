@@ -2,6 +2,7 @@
 import cv2
 import torch
 from torchvision import transforms as T
+from maskrcnn_benchmark.data.transforms import transforms as Tr
 from torchvision.transforms import functional as F
 from maskrcnn_benchmark.modeling.detector import build_detection_model
 from maskrcnn_benchmark.utils.checkpoint import DetectronCheckpointer
@@ -558,9 +559,9 @@ class MyDepthDatasetDemo(object):
         # by 255 if we want to convert to BGR255 format, or flip the channels
         # if we want it to be in RGB in [0-1] range.
 
-        transform = T.ComposeDepthRCNN(
+        transform = Tr.ComposeDepthRCNN(
             [
-                T.ToTensorDepthRCNN()
+                Tr.ToTensorDepthRCNN()
             ]
         )
         return transform

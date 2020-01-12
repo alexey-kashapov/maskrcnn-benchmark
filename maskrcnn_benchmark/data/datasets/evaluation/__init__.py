@@ -3,7 +3,6 @@ from maskrcnn_benchmark.data import datasets
 from .coco import coco_evaluation
 from .voc import voc_evaluation
 from .cityscapes import abs_cityscapes_evaluation
-from .my_dataset import my_dataset_evaluation
 
 def evaluate(dataset, predictions, output_folder, **kwargs):
     """evaluate dataset using different methods based on dataset type.
@@ -25,8 +24,6 @@ def evaluate(dataset, predictions, output_folder, **kwargs):
         return voc_evaluation(**args)
     elif isinstance(dataset, datasets.AbstractDataset):
         return abs_cityscapes_evaluation(**args)
-    elif isinstance(dataset, datasets.MyDataset):
-        return my_dataset_evaluation(**args)
     else:
         dataset_name = dataset.__class__.__name__
         raise NotImplementedError("Unsupported dataset type {}.".format(dataset_name))
