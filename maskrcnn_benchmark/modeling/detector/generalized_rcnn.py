@@ -44,14 +44,11 @@ class GeneralizedRCNN(nn.Module):
         """
         if self.training and targets is None:
             raise ValueError("In training mode, targets should be passed")
-        print ("images in froward = ", images)
         images = to_image_list(images)
-        print (images.tensors)
         features = self.backbone(images.tensors)
+
         proposals, proposal_losses = self.rpn(images, features, targets)
         if self.roi_heads:
-            print ("np.unique(FEATURES) = ", features[0])
-            print ("Proposals = ", proposals[0])
             x, result, detector_losses = self.roi_heads(features, proposals, targets)
         else:
             # RPN-only models don't have roi_heads

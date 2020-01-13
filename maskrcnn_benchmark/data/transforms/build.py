@@ -32,21 +32,22 @@ def build_transforms(cfg, is_train=True):
         saturation=saturation,
         hue=hue,
     )
-    if cfg.MODEL.META_ARCHITECTURE == "DepthRCNN":
-        transform = T.ComposeDepthRCNN(
-            [
-                T.ToTensorDepthRCNN()
-            ]
-        )
-    else:
-        transform = T.Compose(
-            [
-                color_jitter,
-                T.Resize(min_size, max_size),
-                T.RandomHorizontalFlip(flip_horizontal_prob),
-                T.RandomVerticalFlip(flip_vertical_prob),
-                T.ToTensor(),
-                normalize_transform,
-            ]
-        )
+    transform = T.Compose(
+        [
+            # color_jitter,
+            T.Resize(min_size, max_size),
+            # T.RandomHorizontalFlip(flip_horizontal_prob),
+            # T.RandomVerticalFlip(flip_vertical_prob),
+            T.ToTensor(),
+            # normalize_transform,
+        ]
+    )
+    return transform
+
+def build_depth_transforms(cfg, is_train=True):
+    transform = T.ComposeDepthRCNN(
+        [
+            T.ToTensorDepthRCNN()
+        ]
+    )
     return transform

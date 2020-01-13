@@ -4,6 +4,8 @@ import math
 import torch.utils.model_zoo as model_zoo
 from torch.utils.checkpoint import checkpoint
 
+import torchvision.transforms
+from PIL import Image
 
 class RedNet(nn.Module):
     def __init__(self, cfg):
@@ -62,51 +64,75 @@ class RedNet(nn.Module):
 
         return nn.Sequential(*layers)
 
+    # def forward_downsample(self, rgb, depth):
+    #
+    #     x = self.conv1(rgb)
+    #     x = self.bn1(x)
+    #     x = self.relu(x)
+    #     depth = self.conv1_d(depth)
+    #     depth = self.bn1_d(depth)
+    #     depth = self.relu(depth)
+    #
+    #     fuse0 = x + depth
+    #
+    #     x = self.maxpool(fuse0)
+    #     depth = self.maxpool(depth)
+    #
+    #     # block 1
+    #     x = self.layer1(x)
+    #     depth = self.layer1_d(depth)
+    #     fuse1 = x + depth
+    #     # block 2
+    #     x = self.layer2(fuse1)
+    #     depth = self.layer2_d(depth)
+    #     fuse2 = x + depth
+    #     # block 3
+    #     x = self.layer3(fuse2)
+    #     depth = self.layer3_d(depth)
+    #     fuse3 = x + depth
+    #     # block 4
+    #     #x = self.layer4(fuse3)
+    #     #depth = self.layer4_d(depth)
+    #     #fuse4 = x + depth
+    #
+    #     return fuse3
+
     def forward_downsample(self, rgb, depth):
 
         x = self.conv1(rgb)
         x = self.bn1(x)
         x = self.relu(x)
-        depth = self.conv1_d(depth)
-        depth = self.bn1_d(depth)
-        depth = self.relu(depth)
-
-        fuse0 = x + depth
-
-        x = self.maxpool(fuse0)
-        depth = self.maxpool(depth)
+        x = self.maxpool(x)
 
         # block 1
         x = self.layer1(x)
-        depth = self.layer1_d(depth)
-        fuse1 = x + depth
         # block 2
-        x = self.layer2(fuse1)
-        depth = self.layer2_d(depth)
-        fuse2 = x + depth
+        x = self.layer2(x)
         # block 3
-        x = self.layer3(fuse2)
-        depth = self.layer3_d(depth)
-        fuse3 = x + depth
+        x = self.layer3(x)
         # block 4
         #x = self.layer4(fuse3)
         #depth = self.layer4_d(depth)
         #fuse4 = x + depth
 
-        return fuse3
+        return x
 
     def forward(self, rgb_and_depth):
         rgb = rgb_and_depth[0]
         depth = rgb_and_depth[1]
 
-        print ("INPUT FOR REDNET:")
-        print (rgb.shape)
-        print(depth.shape)
+        # print ("INPUT FOR REDNET:")
+        # img = rgb.squeeze()
+        # img = torchvision.transforms.ToPILImage()(img.cpu())
+        # img.save("/home/q/kashapov/maskrcnn-benchmark/input_rednet","PNG")
+
+        # print (rgb.shape)
+        # print(depth.shape)
 
         out = self.forward_downsample(rgb, depth)
 
-        print ("OUTPUT FROM REDNET: ")
-        print (out.shape)
+        # print ("OUTPUT FROM REDNET: ")
+        # print (out.shape)
 
         return [out]
 

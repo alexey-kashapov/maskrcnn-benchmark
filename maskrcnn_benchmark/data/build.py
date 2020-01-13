@@ -12,7 +12,7 @@ from . import datasets as D
 from . import samplers
 
 from .collate_batch import BatchCollator, BatchDepthRCNNCollator, BBoxAugCollator
-from .transforms import build_transforms
+from .transforms import build_transforms, build_depth_transforms
 
 
 def build_dataset(dataset_list, transforms, dataset_catalog, is_train=True):
@@ -42,6 +42,7 @@ def build_dataset(dataset_list, transforms, dataset_catalog, is_train=True):
             args["use_difficult"] = not is_train
         if data["factory"] == "MyCOCODataset":
             args["remove_images_without_annotations"] = is_train
+            args["depth_transforms"] = build_depth_transforms(None, is_train)
         args["transforms"] = transforms
         # make dataset from factory
         dataset = factory(**args)
@@ -155,6 +156,7 @@ def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0, is_
 
     # If bbox aug is enabled in testing, simply set transforms to None and we will apply transforms later
     transforms = None if not is_train and cfg.TEST.BBOX_AUG.ENABLED else build_transforms(cfg, is_train)
+
     print ("Transforms to dataset = ", transforms)
     datasets = build_dataset(dataset_list, transforms, DatasetCatalog, is_train or is_for_period)
 

@@ -5,8 +5,8 @@ import os
 from copy import deepcopy
 
 class DatasetCatalog(object):
-    #DATA_DIR = "/home/q/kashapov/maskrcnn-benchmark/maskrcnn_benchmark/data/datasets/"
-    DATA_DIR = "/home/pirozhochek/facebook_mask-rcnn/maskrcnn-benchmark/maskrcnn_benchmark/data/datasets/"
+    DATA_DIR = "/home/q/kashapov/maskrcnn-benchmark/maskrcnn_benchmark/data/datasets/"
+    # DATA_DIR = "/home/pirozhochek/facebook_mask-rcnn/maskrcnn-benchmark/maskrcnn_benchmark/data/datasets/"
 
     DATASETS = {
         "coco_2017_train": {
@@ -149,11 +149,11 @@ class DatasetCatalog(object):
             "mode": "mask",
             "mini": 10,
         },
-        "my_dataset_coco_train": {
+        "my_coco_dataset_train": {
             "img_dir": "my_dataset/resized_images",
             "ann_file": "my_dataset/resized_images/trainval.json",
         },
-        "my_dataset_coco_test": {
+        "my_coco_dataset_test": {
             "img_dir": "my_dataset/test_resized_images",
             "ann_file": "my_dataset/test_resized_images/trainval.json",
         },
