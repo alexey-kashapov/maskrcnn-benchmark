@@ -89,11 +89,11 @@ class RedNet(nn.Module):
         depth = self.layer3_d(depth)
         fuse3 = x + depth
         # block 4
-        x = self.layer4(fuse3)
-        depth = self.layer4_d(depth)
-        fuse4 = x + depth
+        #x = self.layer4(fuse3)
+        #depth = self.layer4_d(depth)
+        #fuse4 = x + depth
 
-        return fuse4
+        return fuse3
 
     def forward(self, rgb_and_depth):
         rgb = rgb_and_depth[0]
@@ -118,7 +118,7 @@ def conv3x3(in_planes, out_planes, stride=1):
 
 
 class Bottleneck(nn.Module):
-    expansion = 2
+    expansion = 4
 
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super(Bottleneck, self).__init__()

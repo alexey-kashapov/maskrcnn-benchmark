@@ -18,7 +18,6 @@ def build_resnet_backbone(cfg):
     model = nn.Sequential(OrderedDict([("body", body)]))
     model.out_channels = cfg.MODEL.RESNETS.BACKBONE_OUT_CHANNELS
     return model
-    loss_dict = model(images, depths, targets)
 
 
 @registry.BACKBONES.register("R-50-FPN")
