@@ -37,11 +37,11 @@ def has_valid_annotation(anno):
         return True
     return False
 
-class MyCOCODataset(torchvision.datasets.coco.CocoDetection):
+class MyDepthDataset(torchvision.datasets.coco.CocoDetection):
     def __init__(
         self, ann_file, root, remove_images_without_annotations, transforms=None, depth_transforms=None
     ):
-        super(MyCOCODataset, self).__init__(root, ann_file)
+        super(MyDepthDataset, self).__init__(root, ann_file)
         # sort indices for reproducible results
         self.ids = sorted(self.ids)
 
@@ -68,7 +68,7 @@ class MyCOCODataset(torchvision.datasets.coco.CocoDetection):
         self._depth_transforms = depth_transforms
 
     def __getitem__(self, idx):
-        img, anno = super(MyCOCODataset, self).__getitem__(idx)
+        img, anno = super(MyDepthDataset, self).__getitem__(idx)
 
         path = self.coco.loadImgs(idx)[0]['file_name']
         path = path.replace("_color", "_depth")

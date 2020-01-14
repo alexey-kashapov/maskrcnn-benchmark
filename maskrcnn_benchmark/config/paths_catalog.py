@@ -149,11 +149,11 @@ class DatasetCatalog(object):
             "mode": "mask",
             "mini": 10,
         },
-        "my_coco_dataset_train": {
+        "my_single_image_dataset_train": {
             "img_dir": "my_dataset/resized_images",
             "ann_file": "my_dataset/resized_images/trainval.json",
         },
-        "my_coco_dataset_test": {
+        "my_single_image_dataset_test": {
             "img_dir": "my_dataset/test_resized_images",
             "ann_file": "my_dataset/test_resized_images/trainval.json",
         },
@@ -198,7 +198,7 @@ class DatasetCatalog(object):
             attrs["img_dir"] = os.path.join(data_dir, attrs["img_dir"])
             attrs["ann_dir"] = os.path.join(data_dir, attrs["ann_dir"])
             return dict(factory="CityScapesDataset", args=attrs)
-        if "my_dataset" in name:
+        elif "my_dataset" in name:
             data_dir = DatasetCatalog.DATA_DIR
             attrs = DatasetCatalog.DATASETS[name]
             args = dict(
@@ -207,6 +207,17 @@ class DatasetCatalog(object):
             )
             return dict(
                 factory="MyCOCODataset",
+                args=args,
+            )
+        elif "my_single_image_dataset_train" in name:
+            data_dir = DatasetCatalog.DATA_DIR
+            attrs = DatasetCatalog.DATASETS[name]
+            args = dict(
+                root=os.path.join(data_dir, attrs["img_dir"]),
+                ann_file=os.path.join(data_dir, attrs["ann_file"]),
+            )
+            return dict(
+                factory="COCODataset",
                 args=args,
             )
 

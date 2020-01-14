@@ -49,11 +49,13 @@ class COCODemo(object):
     # COCO categories for pretty print
     CATEGORIES = [
         "__background",
+        "sad"
         "battery"
         "camera",
         "connector",
         "motherboard",
-        "screw"
+        "---"
+        "screw",
     ]
 
     def __init__(
@@ -119,7 +121,7 @@ class COCODemo(object):
                 Resize(min_size, max_size),
                 T.ToTensor(),
                 # to_bgr_transform,
-                # normalize_transform,
+                normalize_transform,
             ]
         )
         return transform

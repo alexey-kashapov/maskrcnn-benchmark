@@ -40,7 +40,7 @@ def build_dataset(dataset_list, transforms, dataset_catalog, is_train=True):
             args["remove_images_without_annotations"] = is_train
         if data["factory"] == "PascalVOCDataset":
             args["use_difficult"] = not is_train
-        if data["factory"] == "MyCOCODataset":
+        if data["factory"] == "MyDepthDataset":
             args["remove_images_without_annotations"] = is_train
             args["depth_transforms"] = build_depth_transforms(None, is_train)
         args["transforms"] = transforms

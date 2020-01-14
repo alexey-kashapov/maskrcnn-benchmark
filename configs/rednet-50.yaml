@@ -26,4 +26,4 @@ SOLVER:
 TEST:
   IMS_PER_BATCH: 1
 
-
+OUTPUT_DIR: "./output/my_MYDEPTHCOCO_my_rednet"
