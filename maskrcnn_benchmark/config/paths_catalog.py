@@ -206,7 +206,7 @@ class DatasetCatalog(object):
                 ann_file=os.path.join(data_dir, attrs["ann_file"]),
             )
             return dict(
-                factory="MyCOCODataset",
+                factory="MyDepthDataset",
                 args=args,
             )
         elif "my_single_image_dataset_train" in name:

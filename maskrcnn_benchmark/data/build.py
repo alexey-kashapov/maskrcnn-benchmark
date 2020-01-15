@@ -42,7 +42,21 @@ def build_dataset(dataset_list, transforms, dataset_catalog, is_train=True):
             args["use_difficult"] = not is_train
         if data["factory"] == "MyDepthDataset":
             args["remove_images_without_annotations"] = is_train
-            args["depth_transforms"] = build_depth_transforms(None, is_train)
+            args["transforms"] = transforms[0]
+            args["depth_transforms"] = transforms[1]
+            dataset = factory(**args)
+            datasets.append(dataset)
+            # for testing, return a list of datasets
+            if not is_train:
+                return datasets
+
+            # for training, concatenate all datasets into a single one
+            dataset = datasets[0]
+            if len(datasets) > 1:
+                dataset = D.ConcatDataset(datasets)
+
+            return [dataset]
+
         args["transforms"] = transforms
         # make dataset from factory
         dataset = factory(**args)
@@ -155,9 +169,14 @@ def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0, is_
     dataset_list = cfg.DATASETS.TRAIN if is_train else cfg.DATASETS.TEST
 
     # If bbox aug is enabled in testing, simply set transforms to None and we will apply transforms later
-    transforms = None if not is_train and cfg.TEST.BBOX_AUG.ENABLED else build_transforms(cfg, is_train)
+    if cfg.MODEL.META_ARCHITECTURE == "DepthRCNN":
+        img_transforms = None if not is_train and cfg.TEST.BBOX_AUG.ENABLED else build_transforms(cfg, is_train)
+        depth_transforms = build_depth_transforms(cfg, is_train)
+        transforms = [img_transforms, depth_transforms]
+    else:
+        transforms = None if not is_train and cfg.TEST.BBOX_AUG.ENABLED else build_transforms(cfg, is_train)
+        print ("Transforms to dataset = ", transforms)
 
-    print ("Transforms to dataset = ", transforms)
     datasets = build_dataset(dataset_list, transforms, DatasetCatalog, is_train or is_for_period)
 
     if is_train:

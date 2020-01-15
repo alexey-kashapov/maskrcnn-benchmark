@@ -49,12 +49,11 @@ class MyDepthDatasetDemo(object):
     # COCO categories for pretty print
     CATEGORIES = [
         "__background",
-        "battery"
+        "battery",
         "camera",
         "connector",
         "motherboard",
         "screw",
-
     ]
 
     def __init__(
@@ -156,7 +155,14 @@ class MyDepthDatasetDemo(object):
         # apply pre-processing to image
         # convert to an ImageList, padded so that it is divisible by
         image = self.transforms(original_image)
-        depth = F.to_tensor(original_depth)
+
+        cfg = self.cfg
+        min_size = cfg.INPUT.MIN_SIZE_TEST
+        max_size = cfg.INPUT.MAX_SIZE_TEST
+        depth = T.ToPILImage()(original_depth)
+        depth = Resize(min_size, max_size)(depth)
+        depth = F.to_tensor(depth)
+
         image_list = to_image_list(image, self.cfg.DATALOADER.SIZE_DIVISIBILITY)
         image_list = image_list.to(self.device)
         depth_list = to_image_list(depth, self.cfg.DATALOADER.SIZE_DIVISIBILITY)
@@ -165,7 +171,6 @@ class MyDepthDatasetDemo(object):
         # compute predictions
         with torch.no_grad():
             predictions = self.model(image_list, depth_list)
-            print ("PREDICTIONS = ", predictions)
         predictions = [o.to(self.cpu_device) for o in predictions]
 
         # always single image is passed at a time
@@ -277,6 +282,7 @@ class MyDepthDatasetDemo(object):
         labels = predictions.get_field("labels").tolist()
         print (labels)
         labels = [self.CATEGORIES[i] for i in labels]
+        print ("Labels = ", labels)
         boxes = predictions.bbox
 
         template = "{}: {:.2f}"

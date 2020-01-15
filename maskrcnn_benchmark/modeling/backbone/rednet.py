@@ -20,11 +20,17 @@ class RedNet(nn.Module):
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
+        self.conv_fuse_0 = nn.Conv2d(64, 64, kernel_size=1,stride=1,padding=0,bias=False)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0])
+        self.conv_fuse_1 = nn.Conv2d(256, 256, kernel_size=1,stride=1,padding=0,bias=False)
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
+        self.conv_fuse_2 = nn.Conv2d(512, 512, kernel_size=1,stride=1,padding=0,bias=False)
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
+        self.conv_fuse_3 = nn.Conv2d(1024, 1024, kernel_size=1,stride=1,padding=0,bias=False)
+
+
+        # self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
 
         # resnet for depth channel
         self.inplanes = 64
@@ -34,7 +40,7 @@ class RedNet(nn.Module):
         self.layer1_d = self._make_layer(block, 64, layers[0])
         self.layer2_d = self._make_layer(block, 128, layers[1], stride=2)
         self.layer3_d = self._make_layer(block, 256, layers[2], stride=2)
-        self.layer4_d = self._make_layer(block, 512, layers[3], stride=2)
+        # self.layer4_d = self._make_layer(block, 512, layers[3], stride=2)
 
 
         for m in self.modules():
@@ -64,58 +70,62 @@ class RedNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    # def forward_downsample(self, rgb, depth):
-    #
-    #     x = self.conv1(rgb)
-    #     x = self.bn1(x)
-    #     x = self.relu(x)
-    #     depth = self.conv1_d(depth)
-    #     depth = self.bn1_d(depth)
-    #     depth = self.relu(depth)
-    #
-    #     fuse0 = x + depth
-    #
-    #     x = self.maxpool(fuse0)
-    #     depth = self.maxpool(depth)
-    #
-    #     # block 1
-    #     x = self.layer1(x)
-    #     depth = self.layer1_d(depth)
-    #     fuse1 = x + depth
-    #     # block 2
-    #     x = self.layer2(fuse1)
-    #     depth = self.layer2_d(depth)
-    #     fuse2 = x + depth
-    #     # block 3
-    #     x = self.layer3(fuse2)
-    #     depth = self.layer3_d(depth)
-    #     fuse3 = x + depth
-    #     # block 4
-    #     #x = self.layer4(fuse3)
-    #     #depth = self.layer4_d(depth)
-    #     #fuse4 = x + depth
-    #
-    #     return fuse3
-
     def forward_downsample(self, rgb, depth):
 
         x = self.conv1(rgb)
         x = self.bn1(x)
         x = self.relu(x)
-        x = self.maxpool(x)
+        depth = self.conv1_d(depth)
+        depth = self.bn1_d(depth)
+        depth = self.relu(depth)
+
+        fuse0 = x + depth
+        fuse0 = self.conv_fuse_0(fuse0)
+
+        x = self.maxpool(fuse0)
+        depth = self.maxpool(depth)
 
         # block 1
         x = self.layer1(x)
+        depth = self.layer1_d(depth)
+        fuse1 = x + depth
+        fuse1 = self.conv_fuse_1(fuse1)
         # block 2
-        x = self.layer2(x)
+        x = self.layer2(fuse1)
+        depth = self.layer2_d(depth)
+        fuse2 = x + depth
+        fuse2 = self.conv_fuse_2(fuse2)
         # block 3
-        x = self.layer3(x)
+        x = self.layer3(fuse2)
+        depth = self.layer3_d(depth)
+        fuse3 = x + depth
+        fuse3 = self.conv_fuse_3(fuse3)
         # block 4
         #x = self.layer4(fuse3)
         #depth = self.layer4_d(depth)
         #fuse4 = x + depth
 
-        return x
+        return fuse3
+
+    # def forward_downsample(self, rgb, depth):
+    #
+    #     x = self.conv1(rgb)
+    #     x = self.bn1(x)
+    #     x = self.relu(x)
+    #     x = self.maxpool(x)
+    #
+    #     # block 1
+    #     x = self.layer1(x)
+    #     # block 2
+    #     x = self.layer2(x)
+    #     # block 3
+    #     x = self.layer3(x)
+    #     # block 4
+    #     #x = self.layer4(fuse3)
+    #     #depth = self.layer4_d(depth)
+    #     #fuse4 = x + depth
+    #
+    #     return x
 
     def forward(self, rgb_and_depth):
         rgb = rgb_and_depth[0]

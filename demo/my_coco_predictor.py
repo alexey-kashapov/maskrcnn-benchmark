@@ -49,12 +49,10 @@ class COCODemo(object):
     # COCO categories for pretty print
     CATEGORIES = [
         "__background",
-        "sad"
-        "battery"
+        "battery",
         "camera",
         "connector",
         "motherboard",
-        "---"
         "screw",
     ]
 
@@ -137,8 +135,8 @@ class COCODemo(object):
                 the BoxList via `prediction.fields()`
         """
         predictions = self.compute_prediction(image)
-        print ("predictions = ", predictions)
         top_predictions = self.select_top_predictions(predictions)
+
 
         result = image.copy()
         if self.show_mask_heatmaps:
@@ -324,7 +322,9 @@ class COCODemo(object):
         """
         scores = predictions.get_field("scores").tolist()
         labels = predictions.get_field("labels").tolist()
+        print ("Labels = ", labels)
         labels = [self.CATEGORIES[i] for i in labels]
+        print ("Labels =", labels)
         boxes = predictions.bbox
 
         template = "{}: {:.2f}"
