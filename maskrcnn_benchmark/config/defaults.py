@@ -394,6 +394,9 @@ _C.MODEL.REDNET = CN()
 
 _C.MODEL.REDNET.BACKBONE_OUT_CHANNELS = 512 * 2
 
+_C.MODEL.MYNET = CN()
+_C.MODEL.MYNET.BACKBONE_OUT_CHANNELS = 1024 * 2
+
 # ---------------------------------------------------------------------------- #
 # Solver
 # ---------------------------------------------------------------------------- #

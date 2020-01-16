@@ -9,6 +9,7 @@ from . import fpn as fpn_module
 from . import resnet
 from . import rednet
 from . import my_resnet
+from . import my_net
 
 @registry.BACKBONES.register("R-50-C4")
 @registry.BACKBONES.register("R-50-C5")
@@ -76,6 +77,13 @@ def build_rednet_50_backbone(cfg):
     body = rednet.RedNet(cfg)
     model = nn.Sequential(OrderedDict([("body", body)]))
     model.out_channels = cfg.MODEL.REDNET.BACKBONE_OUT_CHANNELS
+    return model
+
+@registry.BACKBONES.register("MY_NET")
+def build_my_net_backbone(cfg):
+    body = my_net.MyNet(cfg)
+    model = nn.Sequential(OrderedDict([("body", body)]))
+    model.out_channels = cfg.MODEL.MYNET.BACKBONE_OUT_CHANNELS
     return model
 
 @registry.BACKBONES.register("MY_RESNET-50")
