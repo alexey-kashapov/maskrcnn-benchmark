@@ -26,21 +26,18 @@ class MyNet(nn.Module):
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
 
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
-        self.conv_fuse = nn.Conv2d(2048, 2048, kernel_size=1,stride=1,padding=0,bias=False)
-
-
-        # self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
 
         # resnet for depth channel
         self.inplanes = 64
-        self.conv1_d = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3,
+        self.conv1_d = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
                                  bias=False)
         self.bn1_d = nn.BatchNorm2d(64)
         self.layer1_d = self._make_layer(block, 64, layers[0])
         self.layer2_d = self._make_layer(block, 128, layers[1], stride=2)
         self.layer3_d = self._make_layer(block, 256, layers[2], stride=2)
-        # self.layer4_d = self._make_layer(block, 512, layers[3], stride=2)
 
+        self.conv_fuse = nn.Conv2d(2048, 2048, kernel_size=1,stride=1,padding=0,bias=False)
+        self.bn_fuse = nn.BatchNorm2d(2048)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -74,6 +71,7 @@ class MyNet(nn.Module):
         x = self.conv1(rgb)
         x = self.bn1(x)
         x = self.relu(x)
+
         depth = self.conv1_d(depth)
         depth = self.bn1_d(depth)
         depth = self.relu(depth)
@@ -95,6 +93,8 @@ class MyNet(nn.Module):
 
         fuse = torch.cat((x,depth),1)
         fuse = self.conv_fuse(fuse)
+        fuse = self.bn_fuse(fuse)
+        fuse = self.relu(fuse)
 
         # block 4
         #x = self.layer4(fuse3)

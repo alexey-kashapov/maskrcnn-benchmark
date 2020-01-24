@@ -41,6 +41,7 @@ class ResNet50Conv5ROIFeatureExtractor(nn.Module):
 
     def forward(self, x, proposals):
         x = self.pooler(x, proposals)
+        print ("AFTER POOLER SHAPE = ", x.shape)
         x = self.head(x)
         return x
 

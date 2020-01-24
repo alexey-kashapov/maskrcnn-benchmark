@@ -42,6 +42,7 @@ class Resize(object):
         size = self.get_size(image.size)
         image = F.resize(image, size)
         return image
+
 class COCODemo(object):
     # COCO categories for pretty print
     CATEGORIES = [
