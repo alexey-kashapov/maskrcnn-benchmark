@@ -158,12 +158,28 @@ class DatasetCatalog(object):
             "ann_file": "my_dataset/test_resized_images/trainval.json",
         },
         "my_dataset_train": {
-            "img_dir": "my_dataset/resized_images",
-            "ann_file": "my_dataset/resized_images/trainval.json",
+            "img_dir": "my_dataset/data_set_imgs",
+            "ann_file": "my_dataset/data_set_imgs/trainval.json",
         },
         "my_dataset_test": {
-            "img_dir": "my_dataset/test_resized_images",
-            "ann_file": "my_dataset/test_resized_images/trainval.json",
+            "img_dir": "my_dataset/data_set_test_imgs",
+            "ann_file": "my_dataset/data_set_test_imgs/trainval.json",
+        },
+        "my_processed_dataset_train": {
+            "img_dir": "my_dataset/data_set_imgs_processed_depth",
+            "ann_file": "my_dataset/data_set_imgs_processed_depth/trainval.json",
+        },
+        "my_processed_dataset_test": {
+            "img_dir": "my_dataset/data_set_test_imgs_processed_depth",
+            "ann_file": "my_dataset/data_set_test_imgs_processed_depth/trainval.json",
+        },
+        "my_dataset_without_depth_train": {
+            "img_dir": "my_dataset/data_set_imgs",
+            "ann_file": "my_dataset/data_set_imgs/trainval.json",
+        },
+        "my_dataset_without_depth_test": {
+            "img_dir": "my_dataset/data_set_test_imgs",
+            "ann_file": "my_dataset/data_set_test_imgs/trainval.json",
         }
     }
 
@@ -198,7 +214,18 @@ class DatasetCatalog(object):
             attrs["img_dir"] = os.path.join(data_dir, attrs["img_dir"])
             attrs["ann_dir"] = os.path.join(data_dir, attrs["ann_dir"])
             return dict(factory="CityScapesDataset", args=attrs)
-        elif "my_dataset" in name:
+        elif "my_dataset_without_depth" in name:
+            data_dir = DatasetCatalog.DATA_DIR
+            attrs = DatasetCatalog.DATASETS[name]
+            args = dict(
+                root=os.path.join(data_dir, attrs["img_dir"]),
+                ann_file=os.path.join(data_dir, attrs["ann_file"]),
+            )
+            return dict(
+                factory="MyDataset",
+                args=args,
+            )
+        elif "my_processed_dataset" in name:
             data_dir = DatasetCatalog.DATA_DIR
             attrs = DatasetCatalog.DATASETS[name]
             args = dict(
@@ -209,7 +236,7 @@ class DatasetCatalog(object):
                 factory="MyDepthDataset",
                 args=args,
             )
-        elif "my_single_image_dataset_train" in name:
+        elif "my_dataset" in name:
             data_dir = DatasetCatalog.DATA_DIR
             attrs = DatasetCatalog.DATASETS[name]
             args = dict(
@@ -217,7 +244,7 @@ class DatasetCatalog(object):
                 ann_file=os.path.join(data_dir, attrs["ann_file"]),
             )
             return dict(
-                factory="COCODataset",
+                factory="MyDepthDataset",
                 args=args,
             )
 

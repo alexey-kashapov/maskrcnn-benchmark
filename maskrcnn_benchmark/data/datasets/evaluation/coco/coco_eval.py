@@ -84,6 +84,7 @@ def prepare_for_coco_detection(predictions, dataset):
         boxes = prediction.bbox.tolist()
         scores = prediction.get_field("scores").tolist()
         labels = prediction.get_field("labels").tolist()
+        print("labels =", labels)
 
         mapped_labels = [dataset.contiguous_category_id_to_json_id[i] for i in labels]
 
@@ -133,7 +134,7 @@ def prepare_for_coco_segmentation(predictions, dataset):
         # rles = prediction.get_field('mask')
 
         rles = [
-            mask_util.encode(np.array(mask[0, :, :, np.newaxis], order="F"))[0]
+            mask_util.encode(np.array(mask[0, :, :, np.newaxis],dtype=np.uint8, order="F"))[0]
             for mask in masks
         ]
         for rle in rles:

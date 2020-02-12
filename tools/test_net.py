@@ -1,4 +1,4 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+ # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 # Set up custom environment before nearly anything else is imported
 # NOTE: this should be the first import (no not reorder)
 from maskrcnn_benchmark.utils.env import setup_environment  # noqa F401 isort:skip
@@ -9,7 +9,7 @@ import os
 import torch
 from maskrcnn_benchmark.config import cfg
 from maskrcnn_benchmark.data import make_data_loader
-from maskrcnn_benchmark.engine.inference import inference
+from maskrcnn_benchmark.engine.inference import inference, inference_depth
 from maskrcnn_benchmark.modeling.detector import build_detection_model
 from maskrcnn_benchmark.utils.checkpoint import DetectronCheckpointer
 from maskrcnn_benchmark.utils.collect_env import collect_env_info
@@ -94,21 +94,36 @@ def main():
             mkdir(output_folder)
             output_folders[idx] = output_folder
     data_loaders_val = make_data_loader(cfg, is_train=False, is_distributed=distributed)
-    for output_folder, dataset_name, data_loader_val in zip(output_folders, dataset_names, data_loaders_val):
-        inference(
-            model,
-            data_loader_val,
-            dataset_name=dataset_name,
-            iou_types=iou_types,
-            box_only=False if cfg.MODEL.RETINANET_ON else cfg.MODEL.RPN_ONLY,
-            bbox_aug=cfg.TEST.BBOX_AUG.ENABLED,
-            device=cfg.MODEL.DEVICE,
-            expected_results=cfg.TEST.EXPECTED_RESULTS,
-            expected_results_sigma_tol=cfg.TEST.EXPECTED_RESULTS_SIGMA_TOL,
-            output_folder=output_folder,
-        )
-        synchronize()
-
+    if cfg.MODEL.META_ARCHITECTURE == "GeneralizedRCNN":
+        for output_folder, dataset_name, data_loader_val in zip(output_folders, dataset_names, data_loaders_val):
+            inference(
+                model,
+                data_loader_val,
+                dataset_name=dataset_name,
+                iou_types=iou_types,
+                box_only=False if cfg.MODEL.RETINANET_ON else cfg.MODEL.RPN_ONLY,
+                bbox_aug=cfg.TEST.BBOX_AUG.ENABLED,
+                device=cfg.MODEL.DEVICE,
+                expected_results=cfg.TEST.EXPECTED_RESULTS,
+                expected_results_sigma_tol=cfg.TEST.EXPECTED_RESULTS_SIGMA_TOL,
+                output_folder=output_folder,
+            )
+            synchronize()
+    elif cfg.MODEL.META_ARCHITECTURE == "DepthRCNN":
+        for output_folder, dataset_name, data_loader_val in zip(output_folders, dataset_names, data_loaders_val):
+            inference_depth(
+                model,
+                data_loader_val,
+                dataset_name=dataset_name,
+                iou_types=iou_types,
+                box_only=False if cfg.MODEL.RETINANET_ON else cfg.MODEL.RPN_ONLY,
+                bbox_aug=cfg.TEST.BBOX_AUG.ENABLED,
+                device=cfg.MODEL.DEVICE,
+                expected_results=cfg.TEST.EXPECTED_RESULTS,
+                expected_results_sigma_tol=cfg.TEST.EXPECTED_RESULTS_SIGMA_TOL,
+                output_folder=output_folder,
+            )
+            synchronize()
 
 if __name__ == "__main__":
     main()

@@ -170,7 +170,6 @@ class ResNetHead(nn.Module):
         stage2_relative_factor = 2 ** (stages[0].index - 1)
         stage2_bottleneck_channels = num_groups * width_per_group
         out_channels = res2_out_channels * stage2_relative_factor
-        print ("OUT_CHANNELS = ", out_channels)
         #ORIGINAL:
         in_channels = out_channels // 2
         # FOR DEPTH ADDING:

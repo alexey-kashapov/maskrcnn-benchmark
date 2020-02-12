@@ -1,7 +1,6 @@
 MODEL:
-  META_ARCHITECTURE: "DepthRCNN"
-  BACKBONE:
-    CONV_BODY: "MY_NET"
+  META_ARCHITECTURE: "GeneralizedRCNN"
+  WEIGHT: "catalog://ImageNetPretrained/MSRA/R-50"
   RPN:
     PRE_NMS_TOP_N_TEST: 6000
     POST_NMS_TOP_N_TEST: 1000
@@ -11,10 +10,9 @@ MODEL:
     PREDICTOR: "MaskRCNNC4Predictor"
     SHARE_BOX_FEATURE_EXTRACTOR: True
   MASK_ON: True
-
 DATASETS:
-  TRAIN: ("my_dataset_train",)
-  TEST: ("my_dataset_test",)
+  TRAIN: ("my_dataset_without_depth_train",)
+  TEST: ("my_dataset_without_depth_test",)
 SOLVER:
   BASE_LR: 0.0025
   WEIGHT_DECAY: 0.0001
@@ -27,11 +25,11 @@ TEST:
 
 INPUT:
   MIN_SIZE_TRAIN: (600,)
-# Maximum size of the side of the image during training
+  # Maximum size of the side of the image during training
   MAX_SIZE_TRAIN: 800
-# Size of the smallest side of the image during testing
+  # Size of the smallest side of the image during testing
   MIN_SIZE_TEST: 600
-# Maximum size of the side of the image during testing
+  # Maximum size of the side of the image during testing
   MAX_SIZE_TEST: 800
 
-OUTPUT_DIR: "./output/my_MYDEPTHCOCO_my_net"
+OUTPUT_DIR: "./output/e2e_mask_rcnn_R_50_C4_1x_my_dataset"

@@ -154,14 +154,7 @@ class RPNModule(torch.nn.Module):
                 testing, it is an empty dict.
         """
         objectness, rpn_box_regression = self.head(features)
-        print ("objectness = ", objectness[0].shape)
-        print ("rpn_box_regression = ", rpn_box_regression[0].shape)
         anchors = self.anchor_generator(images, features)
-        print ("achors = ")
-        print (anchors)
-        print ("anhcor[0][0][[0]].bbox")
-        print (anchors[0][0].bbox[4499])
-
         if self.training:
             return self._forward_train(anchors, objectness, rpn_box_regression, targets)
         else:

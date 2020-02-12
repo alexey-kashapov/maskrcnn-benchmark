@@ -6,6 +6,7 @@ from .concat_dataset import ConcatDataset
 from .abstract import AbstractDataset
 from .cityscapes import CityScapesDataset
 from .my_dataset import MyDepthDataset
+from .my_dataset import MyDataset
 
 __all__ = [
     "COCODataset",
@@ -13,5 +14,6 @@ __all__ = [
     "PascalVOCDataset",
     "AbstractDataset",
     "CityScapesDataset",
-    "MyDepthDataset"
+    "MyDepthDataset",
+    "MyDataset"
 ]

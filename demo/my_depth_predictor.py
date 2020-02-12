@@ -237,7 +237,7 @@ class MyDepthDatasetDemo(object):
             box = box.to(torch.int64)
             top_left, bottom_right = box[:2].tolist(), box[2:].tolist()
             image = cv2.rectangle(
-                image, tuple(top_left), tuple(bottom_right), tuple(color), 1
+                image, tuple(top_left), tuple(bottom_right), tuple(color), 3
             )
 
         return image
@@ -290,7 +290,7 @@ class MyDepthDatasetDemo(object):
             x, y = box[:2]
             s = template.format(label, score)
             cv2.putText(
-                image, s, (x, y), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1
+                image, s, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 3
             )
 
         return image

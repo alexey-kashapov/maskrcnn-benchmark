@@ -54,10 +54,11 @@ def do_train(
     checkpoint_period,
     test_period,
     arguments,
+    meters
 ):
     logger = logging.getLogger("maskrcnn_benchmark.trainer")
     logger.info("Start training")
-    meters = MetricLogger(delimiter="  ")
+    #meters = MetricLogger(delimiter="  ")
     max_iter = len(data_loader)
     start_iter = arguments["iteration"]
     model.train()
@@ -199,9 +200,6 @@ def do_train(
             data_time = time.time() - end
             iteration = iteration + 1
             arguments["iteration"] = iteration
-
-            print ("IMAGES FROM DATASET = ", images.tensors)
-            print ("TARGET FROM DATASET =", targets)
 
             images = images.to(device)
             # print ("targets = ", targets.get_field("labels"))

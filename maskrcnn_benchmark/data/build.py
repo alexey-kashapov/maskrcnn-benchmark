@@ -15,7 +15,7 @@ from .collate_batch import BatchCollator, BatchDepthRCNNCollator, BBoxAugCollato
 from .transforms import build_transforms, build_depth_transforms
 
 
-def build_dataset(dataset_list, transforms, dataset_catalog, is_train=True):
+def build_dataset(cfg, dataset_list, transforms, dataset_catalog, is_train=True):
     """
     Arguments:
         dataset_list (list[str]): Contains the names of the datasets, i.e.,
@@ -40,6 +40,8 @@ def build_dataset(dataset_list, transforms, dataset_catalog, is_train=True):
             args["remove_images_without_annotations"] = is_train
         if data["factory"] == "PascalVOCDataset":
             args["use_difficult"] = not is_train
+        if data["factory"] == "MyDataset":
+            args["remove_images_without_annotations"] = is_train
         if data["factory"] == "MyDepthDataset":
             args["remove_images_without_annotations"] = is_train
             args["transforms"] = transforms[0]
@@ -177,7 +179,7 @@ def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0, is_
         transforms = None if not is_train and cfg.TEST.BBOX_AUG.ENABLED else build_transforms(cfg, is_train)
         print ("Transforms to dataset = ", transforms)
 
-    datasets = build_dataset(dataset_list, transforms, DatasetCatalog, is_train or is_for_period)
+    datasets = build_dataset(cfg, dataset_list, transforms, DatasetCatalog, is_train or is_for_period)
 
     if is_train:
         # save category_id to label name mapping

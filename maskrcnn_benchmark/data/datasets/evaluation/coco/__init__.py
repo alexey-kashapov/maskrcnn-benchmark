@@ -1,6 +1,6 @@
 from .coco_eval import do_coco_evaluation as do_orig_coco_evaluation
 from .coco_eval_wrapper import do_coco_evaluation as do_wrapped_coco_evaluation
-from maskrcnn_benchmark.data.datasets import AbstractDataset, COCODataset
+from maskrcnn_benchmark.data.datasets import AbstractDataset, COCODataset, MyDepthDataset, MyDataset
 
 
 def coco_evaluation(
@@ -24,6 +24,26 @@ def coco_evaluation(
         )
     elif isinstance(dataset, AbstractDataset):
         return do_wrapped_coco_evaluation(
+            dataset=dataset,
+            predictions=predictions,
+            box_only=box_only,
+            output_folder=output_folder,
+            iou_types=iou_types,
+            expected_results=expected_results,
+            expected_results_sigma_tol=expected_results_sigma_tol,
+        )
+    elif isinstance(dataset, MyDepthDataset):
+        return do_orig_coco_evaluation(
+            dataset=dataset,
+            predictions=predictions,
+            box_only=box_only,
+            output_folder=output_folder,
+            iou_types=iou_types,
+            expected_results=expected_results,
+            expected_results_sigma_tol=expected_results_sigma_tol,
+        )
+    elif isinstance(dataset, MyDataset):
+        return do_orig_coco_evaluation(
             dataset=dataset,
             predictions=predictions,
             box_only=box_only,

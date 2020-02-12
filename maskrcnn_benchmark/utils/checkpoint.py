@@ -136,6 +136,7 @@ class DetectronCheckpointer(Checkpointer):
             return load_c2_format(self.cfg, f)
         # load native detectron.pytorch checkpoint
         loaded = super(DetectronCheckpointer, self)._load_file(f)
+        print ("loaded = ", loaded)
         if "model" not in loaded:
             loaded = dict(model=loaded)
         return loaded

@@ -39,7 +39,7 @@ def build_transforms(cfg, is_train=True):
             # T.RandomHorizontalFlip(flip_horizontal_prob),
             # T.RandomVerticalFlip(flip_vertical_prob),
             T.ToTensor(),
-            # normalize_transform,
+            normalize_transform,
         ]
     )
     return transform
@@ -65,10 +65,15 @@ def build_depth_transforms(cfg, is_train=True):
         saturation = 0.0
         hue = 0.0
 
+    normalize_transform = T.NormalizeDepthRCNN(
+        mean=cfg.INPUT.DEPTH_MEAN, std=cfg.INPUT.DEPTH_STD
+    )
+
     transform = T.ComposeDepthRCNN(
         [
             T.DepthResize(min_size, max_size),
-            T.ToTensorDepthRCNN()
+            T.ToTensorDepthRCNN(),
+            normalize_transform
         ]
     )
     return transform

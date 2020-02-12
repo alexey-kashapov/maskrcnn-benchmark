@@ -29,15 +29,15 @@ class MyNet(nn.Module):
 
         # resnet for depth channel
         self.inplanes = 64
-        self.conv1_d = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
+        self.conv1_d = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3,
                                  bias=False)
         self.bn1_d = nn.BatchNorm2d(64)
         self.layer1_d = self._make_layer(block, 64, layers[0])
         self.layer2_d = self._make_layer(block, 128, layers[1], stride=2)
         self.layer3_d = self._make_layer(block, 256, layers[2], stride=2)
 
-        self.conv_fuse = nn.Conv2d(2048, 2048, kernel_size=1,stride=1,padding=0,bias=False)
-        self.bn_fuse = nn.BatchNorm2d(2048)
+        self.conv_fuse = nn.Conv2d(2048, 1024, kernel_size=1,stride=1,padding=0,bias=False)
+        self.bn_fuse = nn.BatchNorm2d(1024)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -100,7 +100,6 @@ class MyNet(nn.Module):
         #x = self.layer4(fuse3)
         #depth = self.layer4_d(depth)
         #fuse4 = x + depth
-
         return fuse
 
     # def forward_downsample(self, rgb, depth):

@@ -51,6 +51,10 @@ _C.INPUT.MAX_SIZE_TEST = 1333
 _C.INPUT.PIXEL_MEAN = [102.9801, 115.9465, 122.7717]
 # Values to be used for image normalization
 _C.INPUT.PIXEL_STD = [1., 1., 1.]
+# Values to be used for image normalization
+_C.INPUT.DEPTH_MEAN = [125.42]
+# Values to be used for image normalization
+_C.INPUT.DEPTH_STD = [33.87]
 # Convert image to BGR format (for Caffe2 models), in range 0-255
 _C.INPUT.TO_BGR255 = True
 
@@ -395,7 +399,7 @@ _C.MODEL.REDNET = CN()
 _C.MODEL.REDNET.BACKBONE_OUT_CHANNELS = 512 * 2
 
 _C.MODEL.MYNET = CN()
-_C.MODEL.MYNET.BACKBONE_OUT_CHANNELS = 1024 * 2
+_C.MODEL.MYNET.BACKBONE_OUT_CHANNELS = 512 * 2
 
 # ---------------------------------------------------------------------------- #
 # Solver
@@ -467,6 +471,11 @@ _C.TEST.BBOX_AUG.SCALE_H_FLIP = False
 _C.OUTPUT_DIR = "."
 
 _C.PATHS_CATALOG = os.path.join(os.path.dirname(__file__), "paths_catalog.py")
+
+# TensorBoard experiment location
+_C.TENSORBOARD_EXPERIMENT = "logs/maskrcnn-benchmark"
+
+
 
 # ---------------------------------------------------------------------------- #
 # Precision options

@@ -175,8 +175,10 @@ class Normalize(object):
         return image, target
 
 class NormalizeDepthRCNN(object):
-    def __init__(self, mean, std, to_bgr255=True):
-        pass
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
 
-    def __call__(self, image, target=None):
-        pass
+    def __call__(self, depth, target=None):
+        depth = F.normalize(depth, mean=self.mean, std=self.std)
+        return depth

@@ -13,15 +13,16 @@ MODEL:
   MASK_ON: True
 
 DATASETS:
-  TRAIN: ("my_dataset_train",)
-  TEST: ("my_dataset_test",)
+  TRAIN: ("my_processed_dataset_train",)
+  TEST: ("my_processed_dataset_test",)
 SOLVER:
-  BASE_LR: 0.0025
+  BASE_LR: 0.01
   WEIGHT_DECAY: 0.0001
-  STEPS: (480000, 640000)
-  MAX_ITER: 720000
+  STEPS: (2500, 4500)
+  MAX_ITER: 10000
   IMS_PER_BATCH: 1
-  CHECKPOINT_PERIOD: 2500
+  CHECKPOINT_PERIOD: 1000
+  TEST_PERIOD : 1000
 TEST:
   IMS_PER_BATCH: 1
 
@@ -34,4 +35,8 @@ INPUT:
 # Maximum size of the side of the image during testing
   MAX_SIZE_TEST: 800
 
-OUTPUT_DIR: "./output/my_MYDEPTHCOCO_my_net"
+  DEPTH_MEAN : [125.42]
+# Values to be used for image normalization
+  DEPTH_STD : [34.518]
+
+OUTPUT_DIR: "./output/my_processed_dataset_my_net_normalized"
